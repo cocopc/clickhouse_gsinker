@@ -5,7 +5,6 @@ import (
 	"github.com/cocopc/clickhouse_gsinker/raven"
 	"github.com/cocopc/clickhouse_gsinker/task"
 	"github.com/cocopc/gcommons/app"
-	"log"
 	"net/http"
 	_ "net/http/pprof"
 )
@@ -15,16 +14,14 @@ func main() {
 
 	var skr *Sinker
 
-	// pprof 监控地址
-	go func() {
-		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-	}()
-
-
 	app.Run("clickhouse_gsinker", func() error {
 		// 初始化配置
 		cfg := *conf.InitConfig()
 		raven.InitRavenClient(cfg.Raven.Dsn,cfg.Raven.Username,cfg.Raven.Email)
+		// pprof 监控地址
+		go func() {
+			http.ListenAndServe(cfg.Common.Pprof, nil)
+		}()
 		skr = NewSinker(cfg)
 		// 生成任务配置
 		return skr.Init()

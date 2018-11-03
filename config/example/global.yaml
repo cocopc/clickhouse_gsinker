@@ -12,6 +12,7 @@ kafka:
       password:
       username:
 common:
+  pprof: 0.0.0.0:6050
   bufferSize: 90000
   flushInterval: 5
   logLevel: info
