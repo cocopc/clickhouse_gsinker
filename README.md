@@ -5,5 +5,5 @@
 
 * support config json path get value eg: json({"content":{"userid":123}}) userid-> conetent.userid
 
-* conig example (confg][./confg/example/)
+* conig example (confg](./confg/example/)
 
