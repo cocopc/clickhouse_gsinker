@@ -51,7 +51,7 @@ type Config struct {
 	Common struct{
 		FlushInterval int
 		BufferSize int
-		LogType string
+		LogLevel string
 	}
 	Raven struct{
 		Dsn string
