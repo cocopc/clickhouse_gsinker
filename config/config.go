@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"github.com/cocopc/gcommons/log"
 	"github.com/k0kubun/pp"
 	"github.com/spf13/pflag"
@@ -49,6 +50,7 @@ type Config struct {
 	Tasks []*Task
 
 	Common struct{
+		Pprof string
 		FlushInterval int
 		BufferSize int
 		LogLevel string
@@ -71,7 +73,10 @@ var (
 // 初始化配置
 func InitConfig() *Config{
 
+
 	pflag.String("confPath","/Users/panchao/workspace/go/src/github.com/cocopc/clickhouse_gsinker/config/example","config path")
+
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
