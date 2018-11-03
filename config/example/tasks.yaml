@@ -1,0 +1,23 @@
+tasks:
+  - name: ad_task
+    kafka: kafka1
+    topic: pc_test
+    consumerGroup: test_g1
+    clickhouse: ch1
+    tableName: newsearn_test
+    bufferSize: 90000
+    kafkaJsonField: [content.logday,content.userid,content.price]
+    clickhouseColumn: [logday,userid,price]
+    Dims:
+       - name: logday
+         type: String
+         jsonfield: content.logday
+       - name: userid
+         type: String
+         jsonfield: content.userid
+       - name: price
+         type: String
+         jsonfield: content.price
+
+
+
