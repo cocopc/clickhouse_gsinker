@@ -7,18 +7,21 @@ import (
 )
 
 
-type Parser interface {
-	Parse(bs []byte) model.Metric
-}
-
 type GjsonParser struct {
+
+}
+
+func init()  {
+
+	RegParser["gjson"]=&GjsonParser{}
 }
 
 
-func NewParser() Parser {
-
-	return &GjsonParser{}
-}
+//func NewParser() Parser {
+//
+//	return &GjsonParser{}
+//
+//}
 
 func (c *GjsonParser) Parse(bs []byte) model.Metric {
 	mstr := string(bs)

@@ -10,6 +10,11 @@ import (
 )
 
 
+
+
+
+
+
 func main() {
 
 	var skr *Sinker

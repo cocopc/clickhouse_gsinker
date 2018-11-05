@@ -1,11 +1,13 @@
 package config
 
 import (
+	"fmt"
 	"github.com/cocopc/clickhouse_gsinker/input"
 	"github.com/cocopc/clickhouse_gsinker/output"
+	"github.com/cocopc/clickhouse_gsinker/parser"
 	"github.com/cocopc/clickhouse_gsinker/task"
 	"github.com/cocopc/clickhouse_gsinker/util"
-	"github.com/cocopc/clickhouse_gsinker/parser"
+	"reflect"
 )
 
 // GenTasks generate the tasks via config
@@ -21,7 +23,17 @@ func (config *Config) GenTasks() []*task.TaskService {
 		ck := config.GenOutput(taskConfig)
 
 		// 定义JSON解析器
-		p := parser.NewParser()
+		//p := parser.NewParser()
+
+		// 通过反射动态生成相应的解析器，方便扩展
+
+		t := reflect.ValueOf(parser.RegParser[taskConfig.Parser]).Type()
+		v := reflect.New(t).Elem()
+		p:= v.Interface().(parser.Parser)
+
+
+
+		fmt.Println(p)
 		taskImpl := task.NewTaskService(kafka, ck, p)
 
 		// 注册相关的属性到对象

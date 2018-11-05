@@ -76,6 +76,7 @@ func (k *Kafka) Start() error {
 
 	c, err := cluster.NewConsumer(strings.Split(k.Brokers, ","), k.ConsumerGroup, []string{k.Topic}, config)
 	l.Debug("创建kafka consumer")
+
 	if err != nil {
 		raven.RavenClient.CaptureError(err, nil, nil)
 		return err
