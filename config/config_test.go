@@ -9,4 +9,5 @@ func TestConfig(t *testing.T)  {
 
 	cfg := InitConfig()
 	l.Log(cfg)
+
 }

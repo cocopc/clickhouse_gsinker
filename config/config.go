@@ -32,7 +32,7 @@ type Task struct {
 	ConsumerGroup string
 	Clickhouse string
 	TableName string
-
+    Parser string
 	Dims []struct {
 		Name string
 		Type string
@@ -116,7 +116,6 @@ func InitConfig() *Config{
 	pp.Println(baseConfig)
 
 	l.Define("[clichouse_gsinker]",l.Blue,baseConfig.Common.LogLevel)
-
 	return baseConfig
 }
 

@@ -4,20 +4,20 @@ tasks:
     topic: pc_test
     consumerGroup: test_g1
     clickhouse: ch1
+    # current support（gjson,biz） gjson原生json解析, biz业务
+    parser: biz
     tableName: newsearn_test
     bufferSize: 90000
-    kafkaJsonField: [content.logday,content.userid,content.price]
-    clickhouseColumn: [logday,userid,price]
     Dims:
        - name: logday
          type: String
-         jsonfield: content.logday
+         jsonfield: udate.logday
        - name: userid
          type: String
-         jsonfield: content.userid
+         jsonfield: udate.hour
        - name: price
          type: String
-         jsonfield: content.price
+         jsonfield: udate.minute
 
 
 
