@@ -1,7 +1,7 @@
 clickhouse:
   ch1:
     db: default
-    host: bj-dcs-009
+    host: bj-dcs-009:9011,bj-dcs-010:9011
     port: 9011
     username: default
     password: coohua
@@ -12,7 +12,7 @@ kafka:
       password:
       username:
   kafka2:
-    brokers: spark015:9092
+    brokers: bj-dcs-005:9092
     sasl:
       password:
       username:
@@ -21,7 +21,7 @@ common:
   pprof: 0.0.0.0:6050
   bufferSize: 90000
   flushInterval: 5
-  logLevel: info
+  logLevel: warn
 
 Raven:
   dsn: http://ffee003c7163475e8676694055170419@172.16.11.212:9876/15

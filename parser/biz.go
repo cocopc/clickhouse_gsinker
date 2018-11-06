@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cocopc/clickhouse_gsinker/model"
 	"github.com/cocopc/gcommons/log"
+	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"time"
@@ -19,12 +20,14 @@ func init()  {
 }
 
 
-func (c *ECPParser) Parse(bs []byte) model.Metric {
+func (c *ECPParser) Parse(bs []byte) (metric model.Metric,err error){
 	mstr := utils.Bytes2Str(bs)
 
 	if gjson.Valid(mstr) {
 		ctime:=gjson.Get(mstr, "ctime").Int()
-
+		if ctime==0{
+			return nil,errors.New("无ctime字段")
+		}
 		t := time.Unix(0,ctime * 1000000)
 		logday := t.Format("2006-01-02")
 		fullTime := t.Format("2006-01-02 15:04:05")
@@ -35,12 +38,12 @@ func (c *ECPParser) Parse(bs []byte) model.Metric {
 
 		if err!=nil{
 			l.Errorf("biz set json fail %v",err.Error())
-			return nil
+			return nil,errors.New("生成日期字段错误")
 		}
 
-		return &ECPMetric{sstr}
+		return &ECPMetric{sstr},nil
 	}else {
-		return nil
+		return nil,errors.New("不是合法的JSON")
 	}
 
 }

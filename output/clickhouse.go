@@ -7,6 +7,7 @@ import (
 	"github.com/cocopc/clickhouse_gsinker/util"
 	"github.com/cocopc/gcommons/log"
 	"github.com/cocopc/gcommons/utils"
+	"github.com/pkg/errors"
 	"strings"
 	"time"
 )
@@ -102,7 +103,7 @@ func (c *ClickHouse) initConn() (err error) {
 	if c.DsnParams != "" {
 		dsn += "&" + c.DsnParams
 	}
-	// dsn += "&debug=1"
+	//dsn += "&debug=1"
 	for i := 0; i < len(hosts); i++ {
 		pool.SetDsn(c.Host, dsn)
 	}
@@ -115,6 +116,9 @@ func (c *ClickHouse) Write(metrics []model.Metric) (err error) {
 		return
 	}
 	conn := pool.GetConn(c.Host)
+	if conn==nil{
+		return errors.New("获取不到clickhouse连接,检查clickhouse服务是否正常")
+	}
 	tx, err := conn.Begin()
 	if err != nil {
 		return err
@@ -136,25 +140,40 @@ func (c *ClickHouse) Write(metrics []model.Metric) (err error) {
 		}
 	}
 	if err = tx.Commit(); err != nil {
-		return
+		return err
 	}
 	return
 }
 
+
 // LoopWrite will dead loop to write the records
-func (c *ClickHouse) LoopWrite(metrics []model.Metric) {
+func (c *ClickHouse) LoopWrite(metrics []model.Metric)(err error ){
 	var count int
-	FOR:
 	for err := c.Write(metrics); err != nil; {
 		count++
-		l.Errorf("saving msg error %v %s %s", metrics, err.Error()," will loop to write the data")
+		l.Errorf("saving msg error %s %v %s",  err.Error(),metrics," will loop to write the data")
 		time.Sleep(3 * time.Second)
-		if count>=5{
+		if count>=3{
 			l.Errorf("Retry 3 times write to ck fail. Msg: %v",metrics)
-			break FOR
+			return err
 		}
 	}
+	return
 }
+//// LoopWrite will dead loop to write the records
+//func (c *ClickHouse) LoopWrite(metrics []model.Metric) {
+//	var count int
+//	FOR:
+//	for err := c.Write(metrics); err != nil; {
+//		count++
+//		l.Errorf("saving msg error %v %s %s", metrics, err.Error()," will loop to write the data")
+//		time.Sleep(3 * time.Second)
+//		if count>=5{
+//			l.Errorf("Retry 3 times write to ck fail. Msg: %v",metrics)
+//			break FOR
+//		}
+//	}
+//}
 
 
 func (c *ClickHouse) Close() error {

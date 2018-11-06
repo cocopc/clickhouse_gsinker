@@ -2,7 +2,9 @@ package task
 
 import (
 	"fmt"
+	"github.com/Shopify/sarama"
 	"github.com/cocopc/gcommons/log"
+	"syscall"
 
 	"github.com/cocopc/clickhouse_gsinker/input"
 	"github.com/cocopc/clickhouse_gsinker/model"
@@ -58,6 +60,9 @@ func (service *TaskService) Run() {
 	// 预先定义一个100000容量的切片，存储消费到的消息
 	msgs := make([]model.Metric, 0, 100000)
 
+	var markMsg *sarama.ConsumerMessage
+
+
 FOR:
 	for {
 		select {
@@ -65,16 +70,24 @@ FOR:
 			if !more {
 				break FOR
 			}
-			metric := service.parse(msg)
-			if metric != nil{
-				msgs = append(msgs, metric)
+			metric,err := service.parse(msg.Value)
+			markMsg=msg
+			if err != nil{
+				l.Errorf("error: %s; msg: %s" ,err.Error(),msg.Value)
+				service.kafka.Consumer.MarkOffset(markMsg,"")
+				//service.kafka.Consumer.MarkOffset(msgs)
 			}else {
-				l.Errorf("Not Json Data，Ignore Msg: %s" ,msg)
+				msgs = append(msgs, metric)
 			}
 			// 如果切片消息数大于定义的buffersize，执行写入clickhouse的操作
 			if len(msgs) >= service.BufferSize {
+				l.Debug("task run go id: %v",GoID())
 				service.Lock()
-				service.flush(msgs)
+				err := service.flush(msgs)
+				if err != nil {
+					syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
+				}
+				service.kafka.Consumer.MarkOffset(markMsg,"")
 				// 刷入clickhouse数据后，重置切片
 				msgs = make([]model.Metric, 0, 100000)
 				tick = time.NewTicker(time.Duration(service.FlushInterval) * time.Second)
@@ -83,31 +96,42 @@ FOR:
 			// 消息没有达到buffersize大小，根据定时器，执行写入clickhouse操作
 		case <-tick.C:
 			//name:=service.clickhouse.GetName()
+
+			l.Debug("task run go id: %v",GoID())
 			l.Logf( " %s tick",service.clickhouse.GetName())
 			if len(msgs) == 0 {
 				continue
 			}
 			service.Lock()
-			service.flush(msgs)
+			//service.flush(msgs)
+			err := service.flush(msgs)
+			if err != nil {
+				syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
+			}
+			service.kafka.Consumer.MarkOffset(markMsg,"")
+
 			// 刷入clickhouse数据后，重置切片
 			msgs = make([]model.Metric, 0, 100000)
 			service.Unlock()
 		}
 	}
-	service.flush(msgs)
+	errs := service.flush(msgs)
+	if errs != nil {
+		syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
+		}
 	service.stopped <- struct{}{}
 	return
 }
 
 // 反序列化消息对象
-func (service *TaskService) parse(data []byte) model.Metric {
+func (service *TaskService) parse(data []byte) (metric model.Metric ,err error){
 	return service.p.Parse(data)
 }
 
 // 刷入数据到clickhouse中
-func (service *TaskService) flush(metrics []model.Metric) {
+func (service *TaskService) flush(metrics []model.Metric) (err error){
 	l.Log("buf size:", len(metrics))
-	service.clickhouse.LoopWrite(metrics)
+	return service.clickhouse.LoopWrite(metrics)
 }
 
 // 停止任务释放资源

@@ -1,8 +1,8 @@
 tasks:
   - name: ad_task
-    kafka: kafka1
-    topic: pc_test
-    consumerGroup: test_g1
+    kafka: kafka2
+    topic: ecp_decode
+    consumerGroup: go_cksinker_test_g1
     clickhouse: ch1
     # current support（gjson,biz） gjson原生json解析, biz业务
     parser: biz

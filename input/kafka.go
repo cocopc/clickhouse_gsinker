@@ -15,9 +15,9 @@ type Kafka struct {
 	ConsumerGroup string
 	Topic string
 
-	consumer *cluster.Consumer
+	Consumer *cluster.Consumer
 	stopped  chan struct{}
-	msgs     chan []byte
+	msgs     chan *sarama.ConsumerMessage
 
 	Sasl struct {
 		Username string
@@ -32,11 +32,11 @@ func NewKafka() *Kafka{
 
 // 初始化kafka，定义channel存放消费的消息
 func (k *Kafka) Init(){
-	k.msgs = make(chan []byte, 300000)
+	k.msgs = make(chan *sarama.ConsumerMessage, 300000)
 	k.stopped = make(chan struct{})
 }
 
-func (k *Kafka) Msgs() chan []byte {
+func (k *Kafka) Msgs() chan *sarama.ConsumerMessage{
 	return k.msgs
 }
 
@@ -82,11 +82,11 @@ func (k *Kafka) Start() error {
 		return err
 	}
 
-	k.consumer = c
+	k.Consumer = c
 
 	//consume errors
 	go func() {
-		for err := range k.consumer.Errors() {
+		for err := range k.Consumer.Errors() {
 			l.Errorf("Error: %s", err.Error())
 			raven.RavenClient.CaptureError(err, nil, nil)
 		}
@@ -94,7 +94,7 @@ func (k *Kafka) Start() error {
 
 	// consume notifications
 	go func() {
-		for ntf := range k.consumer.Notifications() {
+		for ntf := range k.Consumer.Notifications() {
 			l.Warnf("Rebalanced: %v", ntf)
 			raven.RavenClient.CaptureError(err, nil, nil)
 		}
@@ -107,15 +107,15 @@ func (k *Kafka) Start() error {
 	FOR:
 		for {
 			select {
-				case msg, more := <-k.consumer.Messages():
+				case msg, more := <-k.Consumer.Messages():
 
 					if !more {
 						l.Errorf("consume kafka message not ok")
 						break FOR
 					}
 					l.Logf("msg: %s",msg.Value)
-					k.msgs <- msg.Value
-					k.consumer.MarkOffset(msg, "") // mark message as processed
+					k.msgs <- msg
+					//k.Consumer.MarkOffset(msg, "") // mark message as processed
 
 				}
 		}
@@ -129,8 +129,8 @@ func (k *Kafka) Start() error {
 
 func (k *Kafka) Stop() error {
 	l.Log("stop kafka consumer")
-	if k.consumer!=nil{
-		err:=k.consumer.Close()
+	if k.Consumer!=nil{
+		err:=k.Consumer.Close()
 		if err!=nil{
 			l.Errorf("stop close kafka consumer ",err)
 		}

@@ -6,7 +6,7 @@ var RegParser=make(map[string]interface{})
 
 
 type Parser interface {
-	Parse(bs []byte) model.Metric
+	Parse(bs []byte) (metric model.Metric,err error)
 
 }
 

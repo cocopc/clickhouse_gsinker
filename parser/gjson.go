@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/cocopc/clickhouse_gsinker/model"
+	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 )
 
@@ -23,12 +24,12 @@ func init()  {
 //
 //}
 
-func (c *GjsonParser) Parse(bs []byte) model.Metric {
+func (c *GjsonParser) Parse(bs []byte) (metric model.Metric ,err error){
 	mstr := string(bs)
 	if gjson.Valid(mstr) {
-		return &GjsonMetric{mstr}
+		return &GjsonMetric{mstr},nil
 	}else {
-		return nil
+		return nil,errors.New("不是合法的JSON")
 	}
 
 }
