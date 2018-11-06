@@ -5,6 +5,8 @@
 
 * support config json path get value eg: json({"content":{"userid":123}}) userid-> conetent.userid
 
+* support at least once
+
 * conig example [global](./config/example/global.yaml)  [tasks](./confg/example/tasks.yaml)
 
 
