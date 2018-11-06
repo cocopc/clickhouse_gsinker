@@ -1,7 +1,13 @@
 clickhouse:
   ch1:
     db: default
-    host: bj-dcs-009:9011,bj-dcs-010:9011
+    host: bj-dcs-009
+    port: 9011
+    username: default
+    password: coohua
+  ch2:
+    db: default
+    host: bj-dcs-010
     port: 9011
     username: default
     password: coohua

@@ -119,6 +119,7 @@ FOR:
 	if errs != nil {
 		syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
 		}
+	service.kafka.Consumer.MarkOffset(markMsg,"")
 	service.stopped <- struct{}{}
 	return
 }

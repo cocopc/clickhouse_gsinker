@@ -110,7 +110,7 @@ func (k *Kafka) Start() error {
 				case msg, more := <-k.Consumer.Messages():
 
 					if !more {
-						l.Errorf("consume kafka message not ok")
+						l.Warnf("consume kafka message not ok")
 						break FOR
 					}
 					l.Logf("msg: %s",msg.Value)

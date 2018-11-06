@@ -1,5 +1,5 @@
 tasks:
-  - name: ad_task
+  - name: ad_task_01
     kafka: kafka2
     topic: ecp_decode
     consumerGroup: go_cksinker_test_g1
@@ -18,6 +18,25 @@ tasks:
        - name: price
          type: String
          jsonfield: udate.minute
+  - name: ad_task_01
+    kafka: kafka2
+    topic: ecp_decode
+    consumerGroup: go_cksinker_test_g1
+    clickhouse: ch2
+    # current support（gjson,biz） gjson原生json解析, biz业务
+    parser: biz
+    tableName: newsearn_test
+    bufferSize: 90000
+    Dims:
+    - name: logday
+      type: String
+      jsonfield: udate.logday
+    - name: userid
+      type: String
+      jsonfield: udate.hour
+    - name: price
+      type: String
+      jsonfield: udate.minute
 
 
 

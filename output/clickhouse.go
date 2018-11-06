@@ -151,7 +151,7 @@ func (c *ClickHouse) LoopWrite(metrics []model.Metric)(err error ){
 	var count int
 	for err := c.Write(metrics); err != nil; {
 		count++
-		l.Errorf("saving msg error %s %v %s",  err.Error(),metrics," will loop to write the data")
+		l.Errorf("saving msg error %s %s",  err.Error()," will loop to write the data")
 		time.Sleep(3 * time.Second)
 		if count>=3{
 			l.Errorf("Retry 3 times write to ck fail. Msg: %v",metrics)

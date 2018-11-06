@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/cocopc/clickhouse_gsinker/input"
 	"github.com/cocopc/clickhouse_gsinker/output"
 	"github.com/cocopc/clickhouse_gsinker/parser"
@@ -31,9 +30,6 @@ func (config *Config) GenTasks() []*task.TaskService {
 		v := reflect.New(t).Elem()
 		p:= v.Interface().(parser.Parser)
 
-
-
-		fmt.Println(p)
 		taskImpl := task.NewTaskService(kafka, ck, p)
 
 		// 注册相关的属性到对象
